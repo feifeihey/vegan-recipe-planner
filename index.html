@@ -88,6 +88,7 @@
         }
 
         input[type="text"],
+        input[type="number"],
         select {
             width: 100%;
             padding: 12px;
@@ -95,9 +96,11 @@
             border-radius: 8px;
             font-size: 1em;
             transition: border-color 0.3s;
+            box-sizing: border-box;
         }
 
         input[type="text"]:focus,
+        input[type="number"]:focus,
         select:focus {
             outline: none;
             border-color: #667eea;
@@ -268,6 +271,48 @@
             font-size: 0.9em;
         }
 
+        .person-item {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+        }
+
+        .person-item .person-info {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .person-item .remove-person {
+            background: #f5576c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .person-item .remove-person:hover {
+            background: #d32f2f;
+        }
+
+        .person-list {
+            margin-top: 15px;
+        }
+
         @media (max-width: 968px) {
             .main-content {
                 grid-template-columns: 1fr;
@@ -353,6 +398,21 @@
                 font-size: 0.9em;
                 line-height: 1.5;
             }
+
+            .person-item {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .person-item .person-info {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .person-item .remove-person {
+                align-self: flex-end;
+                margin-top: 8px;
+            }
         }
 
         /* 小屏幕手机优化 */
@@ -411,19 +471,31 @@
             <!-- User Info Section -->
             <div class="section">
                 <h2 class="section-title">👤 个人信息</h2>
+                <div class="info-box">
+                    <strong>提示：</strong> 可以为多个年龄段的人群规划食谱，系统会综合考虑所有人群的营养需求。
+                    </div>
                 <div class="input-group">
-                    <label for="user-age">年龄：</label>
-                    <input type="number" id="user-age" placeholder="例如：30" min="1" max="120" value="30" onchange="updateDailyMealPlan(); updateMissingNutrients();">
+                    <label>添加人群：</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end;">
+                        <div>
+                            <label for="new-person-age" style="font-size: 0.9em; color: #666;">年龄</label>
+                            <input type="number" id="new-person-age" placeholder="例如：30" min="1" max="120" style="margin-top: 5px; width: 100%;">
+                    </div>
+                        <div>
+                            <label for="new-person-gender" style="font-size: 0.9em; color: #666;">性别</label>
+                            <select id="new-person-gender" style="margin-top: 5px; width: 100%;">
+                                <option value="male">男</option>
+                                <option value="female">女</option>
+                            </select>
+                    </div>
+                        <button class="btn" onclick="addPerson()" style="height: fit-content; padding: 12px 20px;">添加</button>
                 </div>
-                <div class="input-group">
-                    <label for="user-gender">性别：</label>
-                    <select id="user-gender" onchange="updateDailyMealPlan(); updateMissingNutrients();">
-                        <option value="male">男</option>
-                        <option value="female">女</option>
-                    </select>
+            </div>
+                <div class="person-list" id="person-list">
+                    <!-- 动态添加的人群列表 -->
                 </div>
-                <div class="info-box" style="margin-top: 15px;">
-                    <strong>提示：</strong> 填写个人信息后，系统会根据您的年龄和性别提供个性化的营养建议和食谱。
+                <div class="info-box" style="margin-top: 15px; display: none;" id="no-person-warning">
+                    <strong>注意：</strong> 请至少添加一个人群信息以生成个性化食谱。
                 </div>
             </div>
 
@@ -447,7 +519,7 @@
                 <button class="btn btn-secondary" onclick="clearIngredients()" style="margin-left: 10px;">清空全部</button>
                 
                 <div class="ingredient-list" id="ingredient-list"></div>
-            </div>
+                </div>
 
             <!-- Daily Meal Plan Section -->
             <div class="section full-width">
@@ -457,7 +529,7 @@
                         添加食材以生成完整的每日食谱（早餐、午餐、晚餐）
                     </p>
                 </div>
-            </div>
+                </div>
 
             <!-- Recipe Suggestions Section -->
             <div class="section full-width">
@@ -467,7 +539,7 @@
                         添加食材以查看食谱建议
                     </p>
                 </div>
-            </div>
+                </div>
 
             <!-- Nutrition Analysis Section -->
             <div class="section full-width">
@@ -477,7 +549,7 @@
                         添加食材以查看营养分析
                     </p>
                 </div>
-            </div>
+                </div>
 
             <!-- Missing Nutrients Section -->
             <div class="section full-width">
@@ -489,7 +561,7 @@
                 </div>
             </div>
         </div>
-    </div>
+                </div>
 
     <script>
         // 素食食材数据库（排除五辛）
@@ -797,6 +869,151 @@
         ];
 
         let selectedIngredients = [];
+        let persons = []; // 存储多个人群信息
+
+        // 添加人群
+        function addPerson() {
+            const ageInput = document.getElementById('new-person-age');
+            const genderSelect = document.getElementById('new-person-gender');
+            
+            const age = parseInt(ageInput.value);
+            const gender = genderSelect.value;
+            
+            if (!age || age < 1 || age > 120) {
+                alert('请输入有效的年龄（1-120）');
+                return;
+            }
+            
+            const person = {
+                id: Date.now(), // 使用时间戳作为唯一ID
+                age: age,
+                gender: gender
+            };
+            
+            persons.push(person);
+            updatePersonList();
+            updateDailyMealPlan();
+            updateMissingNutrients();
+            
+            // 清空输入
+            ageInput.value = '';
+            genderSelect.value = 'male';
+        }
+        
+        // 删除人群
+        function removePerson(id) {
+            persons = persons.filter(p => p.id !== id);
+            updatePersonList();
+            updateDailyMealPlan();
+            updateMissingNutrients();
+        }
+        
+        // 更新人群列表显示
+        function updatePersonList() {
+            const container = document.getElementById('person-list');
+            const warning = document.getElementById('no-person-warning');
+            
+            if (persons.length === 0) {
+                container.innerHTML = '';
+                warning.style.display = 'block';
+                return;
+            }
+            
+            warning.style.display = 'none';
+            container.innerHTML = '';
+            
+            persons.forEach(person => {
+                const personItem = document.createElement('div');
+                personItem.className = 'person-item';
+                personItem.innerHTML = `
+                    <div class="person-info">
+                        <div>
+                            <strong>年龄：</strong>${person.age}岁
+                </div>
+                        <div>
+                            <strong>性别：</strong>${person.gender === 'male' ? '男' : '女'}
+            </div>
+                    </div>
+                    <button class="remove-person" onclick="removePerson(${person.id})" title="删除">×</button>
+                `;
+                container.appendChild(personItem);
+            });
+        }
+        
+        // 获取综合营养需求（考虑所有人群）
+        function getCombinedRequirements() {
+            if (persons.length === 0) {
+                // 如果没有添加人群，使用默认值
+                return getDailyRequirements(30, 'male');
+            }
+            
+            // 计算所有人群的平均需求
+            let combined = {
+                protein: 0,
+                calcium: 0,
+                iron: 0,
+                vitaminC: 0,
+                vitaminB1: 0,
+                vitaminB2: 0,
+                vitaminB3: 0,
+                vitaminB6: 0,
+                vitaminB9: 0,
+                vitaminB12: 0,
+                omega3: 0,
+                fiber: 0,
+                calories: 0,
+                zinc: 0,
+                magnesium: 0,
+                vitaminE: 0,
+                vitaminD: 0,
+                vitaminK: 0,
+                selenium: 0,
+                potassium: 0,
+                phosphorus: 0
+            };
+            
+            persons.forEach(person => {
+                const req = getDailyRequirements(person.age, person.gender);
+                Object.keys(combined).forEach(key => {
+                    combined[key] += req[key];
+                });
+            });
+            
+            // 计算平均值
+            Object.keys(combined).forEach(key => {
+                combined[key] = Math.round(combined[key] / persons.length);
+            });
+            
+            return combined;
+        }
+        
+        // 获取人群描述文本
+        function getPersonsDescription() {
+            if (persons.length === 0) {
+                return '未设置';
+            }
+            
+            if (persons.length === 1) {
+                const p = persons[0];
+                return `${p.gender === 'male' ? '男性' : '女性'}，${p.age}岁`;
+            }
+            
+            // 按年龄段分组
+            const ageGroups = {
+                '儿童': persons.filter(p => p.age < 18),
+                '成人': persons.filter(p => p.age >= 18 && p.age < 60),
+                '老年': persons.filter(p => p.age >= 60)
+            };
+            
+            const descriptions = [];
+            Object.keys(ageGroups).forEach(group => {
+                if (ageGroups[group].length > 0) {
+                    descriptions.push(`${group}${ageGroups[group].length}人`);
+                }
+            });
+            
+            return descriptions.join('、') + `（共${persons.length}人）`;
+        }
 
         // Initialize ingredient dropdown
         function initIngredientSelect() {
@@ -909,9 +1126,8 @@
                 return;
             }
 
-            const age = parseInt(document.getElementById('user-age').value) || 30;
-            const gender = document.getElementById('user-gender').value || 'male';
-            const requirements = getDailyRequirements(age, gender);
+            const requirements = getCombinedRequirements();
+            const personsDesc = getPersonsDescription();
 
             // 将食材分类
             const proteins = selectedIngredients.filter(ing => 
@@ -1057,13 +1273,13 @@
             container.innerHTML = `
                 <div style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
                     <h3 style="color: #00695c; margin-bottom: 15px;">📋 每日完整食谱</h3>
-                    <p style="color: #555; margin-bottom: 10px;"><strong>适用人群：</strong>${gender === 'male' ? '男性' : '女性'}，${age}岁</p>
+                    <p style="color: #555; margin-bottom: 10px;"><strong>适用人群：</strong>${personsDesc}</p>
                     
                     <div style="margin-top: 20px;">
                         <h4 style="color: #d84315; margin-bottom: 10px;">🌅 早餐：</h4>
                         <div style="padding-left: 20px; line-height: 1.8;">
                             ${breakfast.map(item => `<div>${item}</div>`).join('')}
-                        </div>
+    </div>
                     </div>
 
                     <div style="margin-top: 20px;">
@@ -1119,9 +1335,7 @@
 
         // 生成AGES相关建议 - 按食材、数量、补充元素分列呈现
         function generateAGESAdvice(ingredients) {
-            const age = parseInt(document.getElementById('user-age').value) || 30;
-            const gender = document.getElementById('user-gender').value || 'male';
-            const requirements = getDailyRequirements(age, gender);
+            const requirements = getCombinedRequirements();
             const totals = calculateTotalNutrients();
             
             // 建议食材数据库
@@ -1471,9 +1685,7 @@
                 return;
             }
 
-            const age = parseInt(document.getElementById('user-age').value) || 30;
-            const gender = document.getElementById('user-gender').value || 'male';
-            const requirements = getDailyRequirements(age, gender);
+            const requirements = getCombinedRequirements();
             const totals = calculateTotalNutrients();
             const missing = [];
 
@@ -1679,6 +1891,13 @@
         // Initialize on page load
         window.onload = function() {
             initIngredientSelect();
+            // 添加一个默认人群
+            persons.push({
+                id: Date.now(),
+                age: 30,
+                gender: 'male'
+            });
+            updatePersonList();
         };
     </script>
 </body>
