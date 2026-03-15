@@ -468,29 +468,68 @@
         </header>
 
         <div class="main-content">
+            <!-- Global Time Scale Section -->
+            <div class="section full-width">
+                <h2 class="section-title">⏱️ 统计周期设置</h2>
+                <div class="input-group" style="margin-bottom: 0;">
+                    <label for="time-scale" style="font-size: 0.9em; color: #666;">
+                        请选择按日还是按周进行营养统计和缺失对比：
+                    </label>
+                    <select id="time-scale" onchange="updateNutrition(); updateMissingNutrients();" style="max-width: 260px; margin-top: 5px;">
+                        <option value="day">按日统计（单日合计，1 天）</option>
+                        <option value="week">按周统计（全周合计，7 天，按当前模式推算）</option>
+                    </select>
+                </div>
+                <div style="margin-top: 8px; font-size: 0.85em; color: #777;">
+                    当前选择会统领整页的营养元素对比、缺失判断和优化建议。
+                </div>
+            </div>
+
             <!-- User Info Section -->
             <div class="section">
                 <h2 class="section-title">👤 个人信息</h2>
                 <div class="info-box">
-                    <strong>提示：</strong> 可以为多个年龄段的人群规划食谱，系统会综合考虑所有人群的营养需求。
-                    </div>
+                    <strong>提示：</strong> 可以为多个年龄段的人群规划食谱，系统会综合考虑所有人群的营养需求；同时可根据中医体质给出食材倾向建议。
+                </div>
                 <div class="input-group">
                     <label>添加人群：</label>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end;">
+                    <div style="display: grid; grid-template-columns: 1.2fr 1fr auto; gap: 10px; align-items: end;">
                         <div>
-                            <label for="new-person-age" style="font-size: 0.9em; color: #666;">年龄</label>
-                            <input type="number" id="new-person-age" placeholder="例如：30" min="1" max="120" style="margin-top: 5px; width: 100%;">
-                    </div>
+                            <label for="new-person-age-range" style="font-size: 0.9em; color: #666;">年龄段</label>
+                            <select id="new-person-age-range" style="margin-top: 5px; width: 100%;">
+                                <option value="child-1-6">1-6岁（学龄前儿童）</option>
+                                <option value="child-7-12">7-12岁（儿童）</option>
+                                <option value="teen-13-17">13-17岁（青少年）</option>
+                                <option value="adult-18-44" selected>18-44岁（青年成人）</option>
+                                <option value="middle-45-59">45-59岁（中年）</option>
+                                <option value="senior-60+">60岁及以上（老年）</option>
+                            </select>
+                        </div>
                         <div>
                             <label for="new-person-gender" style="font-size: 0.9em; color: #666;">性别</label>
                             <select id="new-person-gender" style="margin-top: 5px; width: 100%;">
                                 <option value="male">男</option>
                                 <option value="female">女</option>
                             </select>
-                    </div>
+                        </div>
                         <button class="btn" onclick="addPerson()" style="height: fit-content; padding: 12px 20px;">添加</button>
+                    </div>
                 </div>
-            </div>
+                <div class="input-group" style="margin-top: 10px;">
+                    <label for="tcm-constitution" style="font-size: 0.9em; color: #666;">中医体质（用于食材倾向推荐）：</label>
+                    <select id="tcm-constitution" onchange="updateTCMAdvice()" style="margin-top: 5px; width: 100%;">
+                        <option value="">未设置 / 平和参考</option>
+                        <option value="qi-deficiency">气虚体质</option>
+                        <option value="yin-deficiency">阴虚体质</option>
+                        <option value="yang-deficiency">阳虚体质</option>
+                        <option value="phlegm-damp">痰湿体质</option>
+                        <option value="damp-heat">湿热体质</option>
+                        <option value="blood-stasis">血瘀体质</option>
+                        <option value="qi-stagnation">气郁体质</option>
+                        <option value="special">特禀体质（过敏倾向）</option>
+                    </select>
+                </div>
+                <div id="tcm-advice" class="info-box" style="margin-top: 10px; display: none;"></div>
                 <div class="person-list" id="person-list">
                     <!-- 动态添加的人群列表 -->
                 </div>
@@ -506,9 +545,20 @@
                     <strong>注意：</strong> 本应用排除大蒜、洋葱、韭菜、葱和兴渠（佛教素食中的五辛）。
                 </div>
                 <div class="input-group">
+                    <label for="category-select">选择分类（果蔬菌豆谷）：</label>
+                    <select id="category-select" onchange="updateIngredientSelect()">
+                        <option value="">请先选择分类...</option>
+                        <option value="fruit">果（水果）</option>
+                        <option value="vegetable">蔬（蔬菜）</option>
+                        <option value="mushroom">菌（菌菇）</option>
+                        <option value="bean">豆（豆类）</option>
+                        <option value="grain">谷（谷类）</option>
+                    </select>
+                </div>
+                <div class="input-group">
                     <label for="ingredient-select">选择食材：</label>
-                    <select id="ingredient-select">
-                        <option value="">请选择食材...</option>
+                    <select id="ingredient-select" disabled>
+                        <option value="">请先选择分类...</option>
                     </select>
                 </div>
                 <div class="input-group">
@@ -529,7 +579,31 @@
                         添加食材以生成完整的每日食谱（早餐、午餐、晚餐）
                     </p>
                 </div>
+            </div>
+
+            <!-- Custom Recipe Upload Section -->
+            <div class="section full-width">
+                <h2 class="section-title">📤 上传自定义食谱</h2>
+                <div class="info-box">
+                    <strong>使用说明：</strong> 可以在下面粘贴文字版食谱，或上传文件（PDF / Word / TXT）。目前营养解析主要基于文字内容，请尽量写明食材名称及大致用量。
                 </div>
+                <div class="input-group">
+                    <label for="custom-recipe-text">食谱正文（支持粘贴自 PDF / Word 等）：</label>
+                    <textarea id="custom-recipe-text" rows="5" placeholder="例如：早餐：燕麦 50 克，奇亚籽 10 克，牛油果半个；午餐：糙米 100 克，豆腐 80 克，西兰花 100 克……" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 0.95em; resize: vertical;"></textarea>
+                </div>
+                <div class="input-group">
+                    <label for="custom-recipe-file">或上传文件（可选）：</label>
+                    <input type="file" id="custom-recipe-file" accept=".txt,.pdf,.doc,.docx" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px dashed #ccc; background: #fafafa;">
+                    <div style="font-size: 0.85em; color: #777; margin-top: 6px;">
+                        PDF / Word 暂无法自动全文解析，请在上方文本框中概括主要食材和用量，系统会据此做营养分析。
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+                    <button class="btn" onclick="analyzeCustomRecipe()">从食谱解析营养</button>
+                    <button class="btn btn-secondary" onclick="clearCustomRecipe()">清空自定义食谱</button>
+                </div>
+                <div id="custom-recipe-summary" style="margin-top: 15px; font-size: 0.9em; color: #555;"></div>
+            </div>
 
             <!-- Recipe Suggestions Section -->
             <div class="section full-width">
@@ -539,24 +613,68 @@
                         添加食材以查看食谱建议
                     </p>
                 </div>
-                </div>
+            </div>
 
             <!-- Nutrition Analysis Section -->
             <div class="section full-width">
-                <h2 class="section-title">📊 营养分析</h2>
+                <h2 class="section-title">📊 营养分析与全日/全周估算</h2>
                 <div id="nutrition-container">
                     <p style="color: #999; text-align: center; padding: 20px;">
-                        添加食材以查看营养分析
+                        添加食材或解析自定义食谱以查看营养分析
                     </p>
                 </div>
-                </div>
+            </div>
 
             <!-- Missing Nutrients Section -->
             <div class="section full-width">
-                <h2 class="section-title">⚠️ 缺失的每日营养素</h2>
+                <h2 class="section-title">⚠️ 缺失营养与优化建议</h2>
                 <div id="missing-nutrients-container">
                     <p style="color: #999; text-align: center; padding: 20px;">
-                        添加食材以查看缺失的营养素
+                        添加食材或解析自定义食谱以查看缺失的营养素与优化方案
+                    </p>
+                </div>
+            </div>
+
+            <!-- Shareable Recipe Card Section -->
+            <div class="section full-width">
+                <h2 class="section-title">📇 生成可分享的菜谱卡片</h2>
+                <div class="info-box">
+                    <strong>说明：</strong> 基于你输入或上传的食谱，配合制作方式和照片，生成一张标准菜谱卡片（支持中/英文），可下载为 HTML 文件分享给朋友。
+                </div>
+                <div class="input-group">
+                    <label for="card-language" style="font-size: 0.9em; color: #666;">卡片语言：</label>
+                    <select id="card-language" style="margin-top: 5px; max-width: 200px;">
+                        <option value="zh" selected>中文</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="card-title-input">菜名 / Recipe Title：</label>
+                    <input type="text" id="card-title-input" placeholder="例如：红薯菠菜汤 / Sweet Potato Spinach Soup">
+                </div>
+                <div class="input-group">
+                    <label for="card-ingredients-input">食材列表 / Ingredients：</label>
+                    <textarea id="card-ingredients-input" rows="3" placeholder="例如：红薯 200g、菠菜 100g、蘑菇 50g..." style="width: 100%; padding: 10px; border-radius: 8px; border: 2px solid #e0e0e0; resize: vertical;"></textarea>
+                    <div style="font-size: 0.85em; color: #777; margin-top: 4px;">
+                        可直接复制上方“上传自定义食谱”中的主要食材内容。
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="card-method-input">制作方式 / Cooking Method（可选）：</label>
+                    <textarea id="card-method-input" rows="4" placeholder="步骤1：...&#10;步骤2：..." style="width: 100%; padding: 10px; border-radius: 8px; border: 2px solid #e0e0e0; resize: vertical;"></textarea>
+                </div>
+                <div class="input-group">
+                    <label for="card-photo-input">菜品照片（可上传多张）：</label>
+                    <input type="file" id="card-photo-input" accept="image/*" multiple style="width: 100%; padding: 8px; border-radius: 8px; border: 1px dashed #ccc; background: #fafafa;">
+                    <div id="card-photo-preview" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;"></div>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
+                    <button class="btn" onclick="generateRecipeCard()">生成菜谱卡片</button>
+                    <button class="btn btn-secondary" onclick="downloadRecipeCard()" id="download-card-btn" disabled>下载菜谱卡片（HTML）</button>
+                </div>
+                <div id="recipe-card-container" style="margin-top: 20px;">
+                    <p style="color: #999; text-align: center; padding: 10px;">
+                        生成菜谱卡片后将在这里预览，可下载分享给朋友。
                     </p>
                 </div>
             </div>
@@ -565,32 +683,39 @@
 
     <script>
         // 素食食材数据库（排除五辛）
+        // 食材分类按「果蔬菌豆谷」：果(水果)、蔬(蔬菜)、菌(菌菇)、豆(豆类)、谷(谷类)
+        const CATEGORY_ORDER = ['fruit', 'vegetable', 'mushroom', 'bean', 'grain']; // 果蔬菌豆谷
         const ingredientsDB = {
-            'tofu': { name: '豆腐', nutrients: { protein: 8, calcium: 350, iron: 1.5, vitaminC: 0, vitaminB12: 0, omega3: 0, fiber: 0.3, calories: 76 } },
-            'tempeh': { name: '天贝', nutrients: { protein: 19, calcium: 111, iron: 2.7, vitaminC: 0, vitaminB12: 0, omega3: 0, fiber: 9, calories: 193 } },
-            'spinach': { name: '菠菜', nutrients: { protein: 2.9, calcium: 99, iron: 2.7, vitaminC: 28, vitaminB12: 0, omega3: 0, fiber: 2.2, calories: 23 } },
-            'broccoli': { name: '西兰花', nutrients: { protein: 2.8, calcium: 47, iron: 0.7, vitaminC: 89, vitaminB12: 0, omega3: 0, fiber: 2.6, calories: 34 } },
-            'kale': { name: '羽衣甘蓝', nutrients: { protein: 2.9, calcium: 150, iron: 1.5, vitaminC: 120, vitaminB12: 0, omega3: 0, fiber: 2, calories: 49 } },
-            'quinoa': { name: '藜麦', nutrients: { protein: 4.4, calcium: 17, iron: 1.5, vitaminC: 0, vitaminB12: 0, omega3: 0, fiber: 2.8, calories: 120 } },
-            'brown-rice': { name: '糙米', nutrients: { protein: 2.6, calcium: 10, iron: 0.4, vitaminC: 0, vitaminB12: 0, omega3: 0, fiber: 1.8, calories: 111 } },
-            'lentils': { name: '扁豆', nutrients: { protein: 9, calcium: 19, iron: 3.3, vitaminC: 1.5, vitaminB12: 0, omega3: 0, fiber: 7.9, calories: 116 } },
-            'chickpeas': { name: '鹰嘴豆', nutrients: { protein: 8.9, calcium: 49, iron: 2.9, vitaminC: 1.3, vitaminB12: 0, omega3: 0, fiber: 7.6, calories: 164 } },
-            'black-beans': { name: '黑豆', nutrients: { protein: 8.9, calcium: 27, iron: 2.1, vitaminC: 0, vitaminB12: 0, omega3: 0, fiber: 7.5, calories: 132 } },
-            'sweet-potato': { name: '红薯', nutrients: { protein: 1.6, calcium: 30, iron: 0.6, vitaminC: 2.4, vitaminB12: 0, omega3: 0, fiber: 3, calories: 86 } },
-            'carrots': { name: '胡萝卜', nutrients: { protein: 0.9, calcium: 33, iron: 0.3, vitaminC: 5.9, vitaminB12: 0, omega3: 0, fiber: 2.8, calories: 41 } },
-            'bell-pepper': { name: '甜椒', nutrients: { protein: 1, calcium: 10, iron: 0.3, vitaminC: 127, vitaminB12: 0, omega3: 0, fiber: 2.5, calories: 31 } },
-            'tomatoes': { name: '番茄', nutrients: { protein: 0.9, calcium: 10, iron: 0.3, vitaminC: 14, vitaminB12: 0, omega3: 0, fiber: 1.2, calories: 18 } },
-            'avocado': { name: '牛油果', nutrients: { protein: 2, calcium: 12, iron: 0.6, vitaminC: 10, vitaminB12: 0, omega3: 0, fiber: 6.7, calories: 160 } },
-            'almonds': { name: '杏仁', nutrients: { protein: 21, calcium: 269, iron: 3.7, vitaminC: 0, vitaminB12: 0, omega3: 0, fiber: 12, calories: 579 } },
-            'walnuts': { name: '核桃', nutrients: { protein: 15, calcium: 98, iron: 2.9, vitaminC: 1.3, vitaminB12: 0, omega3: 2.5, fiber: 6.7, calories: 654 } },
-            'flaxseeds': { name: '亚麻籽', nutrients: { protein: 18, calcium: 255, iron: 5.7, vitaminC: 0.6, vitaminB12: 0, omega3: 22.8, fiber: 27, calories: 534 } },
-            'chia-seeds': { name: '奇亚籽', nutrients: { protein: 16, calcium: 631, iron: 7.7, vitaminC: 1.6, vitaminB12: 0, omega3: 17.8, fiber: 34, calories: 486 } },
-            'oats': { name: '燕麦', nutrients: { protein: 17, calcium: 54, iron: 4.7, vitaminC: 0, vitaminB12: 0, omega3: 0, fiber: 11, calories: 389 } },
-            'mushrooms': { name: '蘑菇', nutrients: { protein: 3.1, calcium: 3, iron: 0.5, vitaminC: 2.1, vitaminB12: 0, omega3: 0, fiber: 1, calories: 22 } },
-            'cabbage': { name: '卷心菜', nutrients: { protein: 1.3, calcium: 40, iron: 0.5, vitaminC: 36.6, vitaminB12: 0, omega3: 0, fiber: 2.5, calories: 25 } },
-            'cauliflower': { name: '花椰菜', nutrients: { protein: 1.9, calcium: 22, iron: 0.4, vitaminC: 48.2, vitaminB12: 0, omega3: 0, fiber: 2, calories: 25 } },
-            'zucchini': { name: '西葫芦', nutrients: { protein: 1.2, calcium: 16, iron: 0.4, vitaminC: 17.9, vitaminB12: 0, omega3: 0, fiber: 1, calories: 17 } },
-            'eggplant': { name: '茄子', nutrients: { protein: 1, calcium: 9, iron: 0.2, vitaminC: 2.2, vitaminB12: 0, omega3: 0, fiber: 3, calories: 25 } }
+            // 果（水果）
+            'tomatoes': { name: '番茄', category: 'fruit', nutrients: { protein: 0.9, calcium: 10, iron: 0.3, vitaminC: 14, vitaminB12: 0, omega3: 0, fiber: 1.2, calories: 18 } },
+            'bell-pepper': { name: '甜椒', category: 'fruit', nutrients: { protein: 1, calcium: 10, iron: 0.3, vitaminC: 127, vitaminB12: 0, omega3: 0, fiber: 2.5, calories: 31 } },
+            'avocado': { name: '牛油果', category: 'fruit', nutrients: { protein: 2, calcium: 12, iron: 0.6, vitaminC: 10, vitaminB12: 0, omega3: 0, fiber: 6.7, calories: 160 } },
+            // 蔬（蔬菜）
+            'spinach': { name: '菠菜', category: 'vegetable', nutrients: { protein: 2.9, calcium: 99, iron: 2.7, vitaminC: 28, vitaminB12: 0, omega3: 0, fiber: 2.2, calories: 23 } },
+            'broccoli': { name: '西兰花', category: 'vegetable', nutrients: { protein: 2.8, calcium: 47, iron: 0.7, vitaminC: 89, vitaminB12: 0, omega3: 0, fiber: 2.6, calories: 34 } },
+            'kale': { name: '羽衣甘蓝', category: 'vegetable', nutrients: { protein: 2.9, calcium: 150, iron: 1.5, vitaminC: 120, vitaminB12: 0, omega3: 0, fiber: 2, calories: 49 } },
+            'carrots': { name: '胡萝卜', category: 'vegetable', nutrients: { protein: 0.9, calcium: 33, iron: 0.3, vitaminC: 5.9, vitaminB12: 0, omega3: 0, fiber: 2.8, calories: 41 } },
+            'cabbage': { name: '卷心菜', category: 'vegetable', nutrients: { protein: 1.3, calcium: 40, iron: 0.5, vitaminC: 36.6, vitaminB12: 0, omega3: 0, fiber: 2.5, calories: 25 } },
+            'cauliflower': { name: '花椰菜', category: 'vegetable', nutrients: { protein: 1.9, calcium: 22, iron: 0.4, vitaminC: 48.2, vitaminB12: 0, omega3: 0, fiber: 2, calories: 25 } },
+            'zucchini': { name: '西葫芦', category: 'vegetable', nutrients: { protein: 1.2, calcium: 16, iron: 0.4, vitaminC: 17.9, vitaminB12: 0, omega3: 0, fiber: 1, calories: 17 } },
+            'eggplant': { name: '茄子', category: 'vegetable', nutrients: { protein: 1, calcium: 9, iron: 0.2, vitaminC: 2.2, vitaminB12: 0, omega3: 0, fiber: 3, calories: 25 } },
+            'sweet-potato': { name: '红薯', category: 'vegetable', nutrients: { protein: 1.6, calcium: 30, iron: 0.6, vitaminC: 2.4, vitaminB12: 0, omega3: 0, fiber: 3, calories: 86 } },
+            // 菌（菌菇）
+            'mushrooms': { name: '蘑菇', category: 'mushroom', nutrients: { protein: 3.1, calcium: 3, iron: 0.5, vitaminC: 2.1, vitaminB12: 0, omega3: 0, fiber: 1, calories: 22 } },
+            // 豆（豆类）
+            'tofu': { name: '豆腐', category: 'bean', nutrients: { protein: 8, calcium: 350, iron: 1.5, vitaminC: 0, vitaminB12: 0, omega3: 0, fiber: 0.3, calories: 76 } },
+            'tempeh': { name: '天贝', category: 'bean', nutrients: { protein: 19, calcium: 111, iron: 2.7, vitaminC: 0, vitaminB12: 0, omega3: 0, fiber: 9, calories: 193 } },
+            'lentils': { name: '扁豆', category: 'bean', nutrients: { protein: 9, calcium: 19, iron: 3.3, vitaminC: 1.5, vitaminB12: 0, omega3: 0, fiber: 7.9, calories: 116 } },
+            'chickpeas': { name: '鹰嘴豆', category: 'bean', nutrients: { protein: 8.9, calcium: 49, iron: 2.9, vitaminC: 1.3, vitaminB12: 0, omega3: 0, fiber: 7.6, calories: 164 } },
+            'black-beans': { name: '黑豆', category: 'bean', nutrients: { protein: 8.9, calcium: 27, iron: 2.1, vitaminC: 0, vitaminB12: 0, omega3: 0, fiber: 7.5, calories: 132 } },
+            // 谷（谷类）
+            'quinoa': { name: '藜麦', category: 'grain', nutrients: { protein: 4.4, calcium: 17, iron: 1.5, vitaminC: 0, vitaminB12: 0, omega3: 0, fiber: 2.8, calories: 120 } },
+            'brown-rice': { name: '糙米', category: 'grain', nutrients: { protein: 2.6, calcium: 10, iron: 0.4, vitaminC: 0, vitaminB12: 0, omega3: 0, fiber: 1.8, calories: 111 } },
+            'oats': { name: '燕麦', category: 'grain', nutrients: { protein: 17, calcium: 54, iron: 4.7, vitaminC: 0, vitaminB12: 0, omega3: 0, fiber: 11, calories: 389 } },
+            'flaxseeds': { name: '亚麻籽', category: 'grain', nutrients: { protein: 18, calcium: 255, iron: 5.7, vitaminC: 0.6, vitaminB12: 0, omega3: 22.8, fiber: 27, calories: 534 } },
+            'chia-seeds': { name: '奇亚籽', category: 'grain', nutrients: { protein: 16, calcium: 631, iron: 7.7, vitaminC: 1.6, vitaminB12: 0, omega3: 17.8, fiber: 34, calories: 486 } },
+            'almonds': { name: '杏仁', category: 'grain', nutrients: { protein: 21, calcium: 269, iron: 3.7, vitaminC: 0, vitaminB12: 0, omega3: 0, fiber: 12, calories: 579 } },
+            'walnuts': { name: '核桃', category: 'grain', nutrients: { protein: 15, calcium: 98, iron: 2.9, vitaminC: 1.3, vitaminB12: 0, omega3: 2.5, fiber: 6.7, calories: 654 } }
         };
 
         // 根据年龄和性别计算每日营养需求
@@ -869,25 +994,441 @@
         ];
 
         let selectedIngredients = [];
+        let customRecipeIngredients = []; // 从自定义食谱解析出的食材
         let persons = []; // 存储多个人群信息
+        let currentRecipeCardHtml = ''; // 最近生成的菜谱卡片 HTML，用于下载
+
+        // ================= 中医体质与食材倾向 =================
+
+        const tcmConstitutionAdvice = {
+            'qi-deficiency': {
+                title: '气虚体质建议',
+                description: '容易乏力、气短、自汗，适合多用健脾益气、温和易消化的素食食材。',
+                recommend: ['糙米', '燕麦', '藜麦', '扁豆', '鹰嘴豆', '黑豆', '红薯', '南瓜类蔬菜', '蘑菇'],
+                avoid: ['大量生冷食物', '冰镇饮品', '过多寒凉水果（如大量西瓜、梨）']
+            },
+            'yin-deficiency': {
+                title: '阴虚体质建议',
+                description: '常见口干咽燥、手足心热、睡眠偏浅，适合多用滋阴润燥、清而不寒的食材。',
+                recommend: ['牛油果', '番茄', '菠菜', '西兰花', '藜麦', '杏仁', '核桃', '芝麻制品', '豆腐'],
+                avoid: ['辛辣燥热调料（辣椒、花椒等）', '油炸燥热食物']
+            },
+            'yang-deficiency': {
+                title: '阳虚体质建议',
+                description: '怕冷、手脚冰凉，精神偏倦，适合多用温阳健脾类素食，注意饮食温热有度。',
+                recommend: ['糙米', '燕麦', '红薯', '黑豆', '扁豆', '蘑菇', '适量坚果', '姜葱类（本应用中已排除五辛，请注意生活中适量使用）'],
+                avoid: ['生冷寒凉食物', '冰饮', '大量寒性水果和蔬菜']
+            },
+            'phlegm-damp': {
+                title: '痰湿体质建议',
+                description: '体型偏胖、困重感明显、易有痰多油腻感，宜清淡饮食、少油少糖。',
+                recommend: ['西兰花', '菠菜', '卷心菜', '花椰菜', '糙米', '藜麦', '扁豆', '鹰嘴豆', '蘑菇'],
+                avoid: ['油炸食品', '甜食点心', '奶油及高糖饮品']
+            },
+            'damp-heat': {
+                title: '湿热体质建议',
+                description: '容易口苦口干、痤疮油脂较多，大便偏黏滞，宜少油少辣，多清利湿热的食材。',
+                recommend: ['苦味/微苦蔬菜（如部分绿叶菜）', '西兰花', '菠菜', '番茄', '黄瓜类蔬菜（可在生活中搭配）', '糙米', '绿豆制品（如绿豆汤，注意不过量）'],
+                avoid: ['辛辣烧烤', '油炸高脂', '酒类和高糖饮料']
+            },
+            'blood-stasis': {
+                title: '血瘀体质建议',
+                description: '易有刺痛、瘀斑、肤色晦暗，宜多用活血、富含抗氧化及膳食纤维的素食。',
+                recommend: ['深色蔬菜（菠菜、羽衣甘蓝、甜菜叶等）', '黑豆', '糙米', '燕麦', '核桃', '亚麻籽', '奇亚籽'],
+                avoid: ['长期高油高糖饮食', '久坐少动（需配合运动改善循环）']
+            },
+            'qi-stagnation': {
+                title: '气郁体质建议',
+                description: '情绪易郁闷、胸闷叹气，宜饮食清淡、规律，并多用助舒肝理气的食材。',
+                recommend: ['富含维生素B族和镁的全谷物（糙米、燕麦、藜麦）', '深色绿叶菜', '适量坚果和种子', '富含芳香成分的蔬果（如柑橘类在生活中搭配）'],
+                avoid: ['暴饮暴食', '浓茶咖啡过量', '长时间不规律饮食']
+            },
+            'special': {
+                title: '特禀体质（过敏倾向）建议',
+                description: '容易过敏或有特殊体质史，饮食宜简单、少添加剂，逐步观察个体反应。',
+                recommend: ['简单少配料的全谷物（糙米、燕麦）', '常见家常蔬菜（西兰花、胡萝卜、菠菜等）', '少量单一品种坚果，逐步尝试'],
+                avoid: ['高度加工食品', '来路不明的调味料', '一次性尝试多种新食物']
+            }
+        };
+
+        function updateTCMAdvice() {
+            const select = document.getElementById('tcm-constitution');
+            const box = document.getElementById('tcm-advice');
+            if (!select || !box) return;
+
+            const value = select.value;
+            if (!value || !tcmConstitutionAdvice[value]) {
+                box.style.display = 'none';
+                box.innerHTML = '';
+                return;
+            }
+
+            const info = tcmConstitutionAdvice[value];
+            box.style.display = 'block';
+            box.innerHTML = `
+                <strong>${info.title}</strong><br>
+                <span style="font-size: 0.9em; color: #555;">${info.description}</span>
+                <div style="margin-top: 6px; font-size: 0.9em;">
+                    <span style="color: #2e7d32; font-weight: 600;">建议多选：</span>
+                    ${info.recommend.join('、')}
+                </div>
+                <div style="margin-top: 4px; font-size: 0.9em;">
+                    <span style="color: #d32f2f; font-weight: 600;">建议减少：</span>
+                    ${info.avoid.join('、')}
+                </div>
+                <div style="margin-top: 6px; font-size: 0.8em; color: #777;">
+                    （说明：中医体质建议属于一般性参考，不替代专业中医或临床诊断。）
+                </div>
+            `;
+        }
+
+        // ================= 菜谱卡片生成与下载 =================
+
+        // 预览上传的菜品照片（缩略图）
+        const cardPhotoInput = document.getElementById('card-photo-input');
+        const cardPhotoPreview = document.getElementById('card-photo-preview');
+        if (cardPhotoInput && cardPhotoPreview) {
+            cardPhotoInput.addEventListener('change', () => {
+                cardPhotoPreview.innerHTML = '';
+                const files = Array.from(cardPhotoInput.files || []);
+                files.slice(0, 4).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.style.maxWidth = '80px';
+                        img.style.maxHeight = '80px';
+                        img.style.borderRadius = '8px';
+                        img.style.objectFit = 'cover';
+                        img.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
+                        cardPhotoPreview.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            });
+        }
+
+        function generateRecipeCard() {
+            const language = (document.getElementById('card-language') || {}).value || 'zh';
+            const titleInput = document.getElementById('card-title-input');
+            const ingredientsInput = document.getElementById('card-ingredients-input');
+            const methodInput = document.getElementById('card-method-input');
+            const container = document.getElementById('recipe-card-container');
+            const downloadBtn = document.getElementById('download-card-btn');
+
+            if (!titleInput || !ingredientsInput || !methodInput || !container) return;
+
+            const title = titleInput.value.trim();
+            const ingredients = ingredientsInput.value.trim();
+            const method = methodInput.value.trim();
+
+            if (!title) {
+                alert(language === 'zh' ? '请输入菜名 / Recipe Title' : 'Please enter a recipe title.');
+                return;
+            }
+
+            // 收集图片 DataURL
+            const photos = [];
+            const previewImgs = cardPhotoPreview ? Array.from(cardPhotoPreview.querySelectorAll('img')) : [];
+            previewImgs.forEach(img => {
+                photos.push(img.src);
+            });
+
+            const createdAt = new Date();
+            const dateText = createdAt.toLocaleDateString(language === 'zh' ? 'zh-CN' : 'en-US');
+
+            const cardHtml = `
+<!DOCTYPE html>
+<html lang="${language === 'zh' ? 'zh-CN' : 'en'}">
+<head>
+    <meta charset="UTF-8">
+    <title>${title}</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: #f5f5f5;
+        }
+        .card-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .recipe-card-share {
+            max-width: 720px;
+            width: 100%;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+            overflow: hidden;
+            border-top: 6px solid #667eea;
+        }
+        .card-header {
+            padding: 20px 24px 12px;
+        }
+        .card-title {
+            font-size: 1.6em;
+            font-weight: 700;
+            margin: 0 0 4px;
+            color: #333;
+        }
+        .card-subtitle {
+            font-size: 0.9em;
+            color: #777;
+        }
+        .card-photos {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 0 16px 12px;
+        }
+        .card-photos img {
+            flex: 1 1 calc(50% - 6px);
+            max-height: 160px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        .card-content {
+            padding: 8px 24px 20px;
+        }
+        .section-title {
+            font-size: 1em;
+            font-weight: 600;
+            color: #667eea;
+            margin: 12px 0 6px;
+        }
+        .section-body {
+            font-size: 0.95em;
+            color: #444;
+            line-height: 1.7;
+            white-space: pre-wrap;
+        }
+        .card-footer {
+            padding: 10px 24px 16px;
+            font-size: 0.8em;
+            color: #999;
+            border-top: 1px dashed #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="card-wrapper">
+        <div class="recipe-card-share">
+            <div class="card-header">
+                <h1 class="card-title">${title}</h1>
+                <div class="card-subtitle">
+                    ${language === 'zh' ? '素食营养菜谱卡片 · 适合分享给家人朋友' : 'Plant-based nutrition recipe card · For sharing with family and friends'}
+                </div>
+            </div>
+            ${photos.length > 0 ? `
+            <div class="card-photos">
+                ${photos.map(src => `<img src="${src}" alt="${title}">`).join('')}
+            </div>` : ''}
+            <div class="card-content">
+                <div class="section">
+                    <div class="section-title">${language === 'zh' ? '食材 / Ingredients' : 'Ingredients'}</div>
+                    <div class="section-body">${ingredients || (language === 'zh' ? '（未填写）' : '(Not provided)')}</div>
+                </div>
+                <div class="section">
+                    <div class="section-title">${language === 'zh' ? '制作方式 / Method' : 'Method'}</div>
+                    <div class="section-body">${method || (language === 'zh' ? '（未填写详细步骤，可在分享前补充）' : '(No detailed steps yet, you can add before sharing.)')}</div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span>${language === 'zh' ? '生成日期' : 'Generated on'}：${dateText}</span>
+                <span>${language === 'zh' ? '由「素食食谱与营养规划器」生成' : 'Generated by Veggie Recipe & Nutrition Planner'}</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+            `.trim();
+
+            currentRecipeCardHtml = cardHtml;
+
+            // 在当前页面中预览（用简化版卡片）
+            container.innerHTML = `
+                <div style="background: #f5f5f5; padding: 12px; border-radius: 12px;">
+                    <div style="max-width: 720px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.12); overflow: hidden;">
+                        ${cardHtml
+                            .replace(/^[\s\S]*?<body>/, '')
+                            .replace(/<\/body>[\s\S]*$/,'')
+                        }
+                    </div>
+                </div>
+            `;
+
+            if (downloadBtn) {
+                downloadBtn.disabled = false;
+            }
+        }
+
+        function downloadRecipeCard() {
+            if (!currentRecipeCardHtml) {
+                alert('请先生成一张菜谱卡片。');
+                return;
+            }
+            const blob = new Blob([currentRecipeCardHtml], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'recipe-card.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // ================= 自定义食谱解析相关 =================
+
+        // 从文本中解析出已知食材及大致用量（克）
+        function parseIngredientsFromText(text) {
+            const results = [];
+            if (!text) return results;
+
+            const normalized = text.replace(/\s+/g, '');
+
+            Object.keys(ingredientsDB).forEach(key => {
+                const info = ingredientsDB[key];
+                if (!info.name) return;
+
+                if (normalized.includes(info.name)) {
+                    // 简单规则：尝试在食材名前后寻找类似“50克”这样的数字+单位
+                    let amount = 100; // 默认 100 克
+                    const pattern = new RegExp('(\\d{1,3})\\s*(克|g|G)(?=[^\\d]{0,5}' + info.name + ')');
+                    const match = text.match(pattern);
+                    if (match && match[1]) {
+                        const parsed = parseInt(match[1], 10);
+                        if (!isNaN(parsed) && parsed > 0 && parsed < 1000) {
+                            amount = parsed;
+                        }
+                    }
+
+                    results.push({
+                        key,
+                        name: info.name,
+                        amount,
+                        nutrients: info.nutrients
+                    });
+                }
+            });
+
+            return results;
+        }
+
+        // 解析自定义食谱按钮
+        function analyzeCustomRecipe() {
+            const textArea = document.getElementById('custom-recipe-text');
+            const fileInput = document.getElementById('custom-recipe-file');
+            const summary = document.getElementById('custom-recipe-summary');
+
+            const rawText = textArea.value.trim();
+
+            if (!rawText && !fileInput.files.length) {
+                alert('请先在文本框中粘贴食谱内容，或上传一个包含食谱的文件。');
+                return;
+            }
+
+            // 文件上传仅用于记录名称，实际解析仍基于文本框
+            let fileNote = '';
+            if (fileInput.files.length) {
+                const file = fileInput.files[0];
+                fileNote = `已上传文件：${file.name}。`;
+                if (!rawText) {
+                    alert('当前版本暂不支持直接从 PDF / Word 中自动解析，请在上方文本框中粘贴主要食材及用量。');
+                    return;
+                }
+            }
+
+            customRecipeIngredients = parseIngredientsFromText(rawText);
+
+            if (customRecipeIngredients.length === 0) {
+                summary.innerHTML = `
+                    <div class="warning">
+                        未能在文本中识别出已知食材，请确保使用了数据库中的中文食材名称（如：豆腐、天贝、糙米、菠菜等），并尽量写明用量（例如“50 克”）。
+                    </div>
+                `;
+            } else {
+                const listHtml = customRecipeIngredients.map(ing => `${ing.name}（约 ${ing.amount} 克）`).join('、');
+                summary.innerHTML = `
+                    <div class="info-box">
+                        <strong>已根据自定义食谱识别出以下食材：</strong><br>
+                        ${listHtml}<br>
+                        ${fileNote ? `<span style="font-size: 0.85em; color: #777;">${fileNote}</span>` : ''}
+                    </div>
+                `;
+            }
+
+            // 解析结果参与营养统计与缺失分析
+            updateDailyMealPlan();
+            updateNutrition();
+            updateMissingNutrients();
+        }
+
+        // 清空自定义食谱
+        function clearCustomRecipe() {
+            customRecipeIngredients = [];
+            const textArea = document.getElementById('custom-recipe-text');
+            const fileInput = document.getElementById('custom-recipe-file');
+            const summary = document.getElementById('custom-recipe-summary');
+
+            if (textArea) textArea.value = '';
+            if (fileInput) fileInput.value = '';
+            if (summary) summary.innerHTML = '';
+
+            updateDailyMealPlan();
+            updateNutrition();
+            updateMissingNutrients();
+        }
+
+        function mapAgeRangeToAge(rangeKey) {
+            switch (rangeKey) {
+                case 'child-1-6': return 4;   // 学龄前
+                case 'child-7-12': return 10; // 儿童
+                case 'teen-13-17': return 15; // 青少年
+                case 'adult-18-44': return 30; // 青年成人
+                case 'middle-45-59': return 50; // 中年
+                case 'senior-60+': return 65; // 老年
+                default: return 30;
+            }
+        }
+
+        function mapAgeRangeToLabel(rangeKey) {
+            switch (rangeKey) {
+                case 'child-1-6': return '1-6岁（学龄前儿童）';
+                case 'child-7-12': return '7-12岁（儿童）';
+                case 'teen-13-17': return '13-17岁（青少年）';
+                case 'adult-18-44': return '18-44岁（青年成人）';
+                case 'middle-45-59': return '45-59岁（中年）';
+                case 'senior-60+': return '60岁及以上（老年）';
+                default: return '18-44岁（青年成人）';
+            }
+        }
 
         // 添加人群
         function addPerson() {
-            const ageInput = document.getElementById('new-person-age');
+            const ageRangeSelect = document.getElementById('new-person-age-range');
             const genderSelect = document.getElementById('new-person-gender');
+            const tcmSelect = document.getElementById('tcm-constitution');
             
-            const age = parseInt(ageInput.value);
+            const ageRangeKey = ageRangeSelect ? ageRangeSelect.value : 'adult-18-44';
+            const age = mapAgeRangeToAge(ageRangeKey);
             const gender = genderSelect.value;
-            
-            if (!age || age < 1 || age > 120) {
-                alert('请输入有效的年龄（1-120）');
-                return;
-            }
+            const tcm = tcmSelect ? tcmSelect.value : '';
             
             const person = {
                 id: Date.now(), // 使用时间戳作为唯一ID
                 age: age,
-                gender: gender
+                ageRangeKey: ageRangeKey,
+                ageRangeLabel: mapAgeRangeToLabel(ageRangeKey),
+                gender: gender,
+                tcm: tcm || ''
             };
             
             persons.push(person);
@@ -896,8 +1437,8 @@
             updateMissingNutrients();
             
             // 清空输入
-            ageInput.value = '';
             genderSelect.value = 'male';
+            // 体质选择不清空，方便连续添加同一体质的人群
         }
         
         // 删除人群
@@ -925,14 +1466,30 @@
             persons.forEach(person => {
                 const personItem = document.createElement('div');
                 personItem.className = 'person-item';
+                
+                const tcmLabelMap = {
+                    'qi-deficiency': '气虚体质',
+                    'yin-deficiency': '阴虚体质',
+                    'yang-deficiency': '阳虚体质',
+                    'phlegm-damp': '痰湿体质',
+                    'damp-heat': '湿热体质',
+                    'blood-stasis': '血瘀体质',
+                    'qi-stagnation': '气郁体质',
+                    'special': '特禀体质'
+                };
+                const tcmText = person.tcm && tcmLabelMap[person.tcm] ? tcmLabelMap[person.tcm] : '未设置';
+
                 personItem.innerHTML = `
                     <div class="person-info">
                         <div>
-                            <strong>年龄：</strong>${person.age}岁
-                </div>
+                            <strong>年龄段：</strong>${person.ageRangeLabel || (person.age + '岁')}
+                        </div>
                         <div>
                             <strong>性别：</strong>${person.gender === 'male' ? '男' : '女'}
-            </div>
+                        </div>
+                        <div>
+                            <strong>体质：</strong>${tcmText}
+                        </div>
                     </div>
                     <button class="remove-person" onclick="removePerson(${person.id})" title="删除">×</button>
                 `;
@@ -1015,15 +1572,48 @@
             return descriptions.join('、') + `（共${persons.length}人）`;
         }
 
+        // 更新食材下拉框（根据分类）
+        function updateIngredientSelect() {
+            const categorySelect = document.getElementById('category-select');
+            const ingredientSelect = document.getElementById('ingredient-select');
+            const selectedCategory = categorySelect.value;
+            
+            // 清空现有选项
+            ingredientSelect.innerHTML = '';
+            
+            if (!selectedCategory) {
+                ingredientSelect.disabled = true;
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = '请先选择分类...';
+                ingredientSelect.appendChild(option);
+                return;
+            }
+            
+            // 启用下拉框
+            ingredientSelect.disabled = false;
+            
+            // 添加默认选项
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = '请选择食材...';
+            ingredientSelect.appendChild(defaultOption);
+            
+            // 根据分类筛选食材
+            Object.keys(ingredientsDB).forEach(key => {
+                if (ingredientsDB[key].category === selectedCategory) {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = ingredientsDB[key].name;
+                    ingredientSelect.appendChild(option);
+                }
+            });
+        }
+        
         // Initialize ingredient dropdown
         function initIngredientSelect() {
-            const select = document.getElementById('ingredient-select');
-            Object.keys(ingredientsDB).forEach(key => {
-                const option = document.createElement('option');
-                option.value = key;
-                option.textContent = ingredientsDB[key].name;
-                select.appendChild(option);
-            });
+            // 初始化时不需要填充食材，等待用户选择分类
+            updateIngredientSelect();
         }
 
         // Add ingredient to list
@@ -1054,8 +1644,11 @@
             updateMissingNutrients();
 
             // Reset inputs
+            document.getElementById('category-select').value = '';
             select.value = '';
+            select.disabled = true;
             amountInput.value = '100';
+            updateIngredientSelect();
         }
 
         // Update ingredient list display
@@ -1094,7 +1687,7 @@
             updateMissingNutrients();
         }
 
-        // Calculate total nutrients
+        // Calculate total nutrients（包含手动添加食材 + 自定义食谱解析食材）
         function calculateTotalNutrients() {
             const totals = {
                 protein: 0,
@@ -1107,7 +1700,9 @@
                 calories: 0
             };
 
-            selectedIngredients.forEach(ing => {
+            const all = selectedIngredients.concat(customRecipeIngredients || []);
+
+            all.forEach(ing => {
                 const multiplier = ing.amount / 100; // Convert to per 100g basis
                 Object.keys(totals).forEach(nutrient => {
                     totals[nutrient] += (ing.nutrients[nutrient] || 0) * multiplier;
@@ -1643,12 +2238,22 @@
         function updateNutrition() {
             const container = document.getElementById('nutrition-container');
             
-            if (selectedIngredients.length === 0) {
-                container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">添加食材以查看营养分析</p>';
+            const hasIngredients = selectedIngredients.length > 0 || (customRecipeIngredients && customRecipeIngredients.length > 0);
+
+            if (!hasIngredients) {
+                container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">添加食材或解析自定义食谱以查看营养分析</p>';
                 return;
             }
 
-            const totals = calculateTotalNutrients();
+            const scaleSelect = document.getElementById('time-scale');
+            const scale = scaleSelect ? scaleSelect.value : 'day';
+            const factor = scale === 'week' ? 7 : 1;
+
+            const baseTotals = calculateTotalNutrients();
+            const totals = {};
+            Object.keys(baseTotals).forEach(k => {
+                totals[k] = baseTotals[k] * factor;
+            });
             
             container.innerHTML = '<div class="nutrients-grid"></div>';
             const grid = container.querySelector('.nutrients-grid');
@@ -1680,14 +2285,29 @@
         function updateMissingNutrients() {
             const container = document.getElementById('missing-nutrients-container');
             
-            if (selectedIngredients.length === 0) {
-                container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">添加食材以查看缺失的营养素</p>';
+            const hasIngredients = selectedIngredients.length > 0 || (customRecipeIngredients && customRecipeIngredients.length > 0);
+
+            if (!hasIngredients) {
+                container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">添加食材或解析自定义食谱以查看缺失的营养素</p>';
                 return;
             }
 
-            const requirements = getCombinedRequirements();
-            const totals = calculateTotalNutrients();
-            const missing = [];
+            const scaleSelect = document.getElementById('time-scale');
+            const scale = scaleSelect ? scaleSelect.value : 'day';
+            const factor = scale === 'week' ? 7 : 1;
+
+            const baseReq = getCombinedRequirements();
+            const baseTotals = calculateTotalNutrients();
+
+            const requirements = {};
+            Object.keys(baseReq).forEach(k => {
+                requirements[k] = baseReq[k] * factor;
+            });
+
+            const totals = {};
+            Object.keys(baseTotals).forEach(k => {
+                totals[k] = baseTotals[k] * factor;
+            });
 
             const nutrientLabels = {
                 protein: { label: '蛋白质', unit: '克' },
@@ -1699,32 +2319,40 @@
                 fiber: { label: '膳食纤维', unit: '克' }
             };
 
+            // 构造完整对比行（包括达标和不足）
+            const rows = [];
+            const missing = [];
+
             Object.keys(nutrientLabels).forEach(nutrient => {
                 const current = totals[nutrient] || 0;
-                const required = requirements[nutrient];
-                const deficit = required - current;
+                const required = requirements[nutrient] || 0;
+                const diff = current - required; // 正为超出，负为不足
+                const labelInfo = nutrientLabels[nutrient];
 
-                if (deficit > 0) {
+                const row = {
+                    key: nutrient,
+                    name: labelInfo.label,
+                    unit: labelInfo.unit,
+                    required: required,
+                    current: current,
+                    diff: diff
+                };
+                rows.push(row);
+
+                if (diff < 0) {
+                    const deficit = -diff;
                     missing.push({
-                        name: nutrientLabels[nutrient].label,
+                        key: nutrient,
+                        name: labelInfo.label,
                         amount: deficit.toFixed(1),
-                        unit: nutrientLabels[nutrient].unit,
+                        unit: labelInfo.unit,
                         current: current.toFixed(1),
                         required: required
                     });
                 }
             });
 
-            if (missing.length === 0) {
-                container.innerHTML = `
-                    <div class="info-box">
-                        <strong>太好了！</strong> 您当前的食材提供了所有必需的每日营养素。继续保持均衡饮食！
-                    </div>
-                `;
-                return;
-            }
-
-            // 生成补充建议表格数据
+            // 生成补充建议表格数据（只针对不足项）
             const supplementTable = [];
             
             missing.forEach(item => {
@@ -1842,24 +2470,74 @@
                 supplementTable.push(...suggestions);
             });
 
+            const optimizationAdvice = `
+                <div style="margin-top: 20px; font-size: 0.9em; color: #555; line-height: 1.6;">
+                    <strong>综合优化建议：</strong><br>
+                    1. 优先通过食物本身（豆类、全谷物、深色叶菜、坚果和种子等）来弥补缺口，必要时再考虑补充剂（特别是维生素B12）。<br>
+                    2. 将富含蛋白质和铁的豆类、扁豆、鹰嘴豆与富含维生素C的蔬菜（如甜椒、西兰花）搭配食用，有助于提升铁的吸收率。<br>
+                    3. 适当增加富含膳食纤维的全谷（燕麦、糙米、藜麦）和种子（奇亚籽、亚麻籽），有助于血糖平稳、提升饱腹感并保护心血管健康。<br>
+                    4. 针对 Omega-3 不足，可规律加入亚麻籽、奇亚籽或核桃，对心脑血管和抗炎都有长期益处。
+                </div>
+            `;
+
+            // 对比表格：左列需求，右列当前，一行一行对比
+            const comparisonTableHtml = `
+                <div style="margin-top: 10px;">
+                    <h3 style="margin-bottom: 10px;">每日 / 每周营养对比一览</h3>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+                            <thead>
+                                <tr style="background: #f5f5f5;">
+                                    <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">营养素</th>
+                                    <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">推荐摄入</th>
+                                    <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">当前摄入</th>
+                                    <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">差值</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows.map(row => {
+                                    const diffValue = row.diff;
+                                    const isLack = diffValue < -0.1; // 稍微留一点浮动
+                                    const isOver = diffValue > 0.1;
+                                    const diffText = `${diffValue > 0 ? '+' : ''}${diffValue.toFixed(1)} ${row.unit}`;
+                                    const diffColor = isLack ? '#d32f2f' : (isOver ? '#2e7d32' : '#555');
+                                    const rowBg = isLack ? 'background: #ffebee;' : '';
+                                    return `
+                                        <tr style="${rowBg}">
+                                            <td style="padding: 8px; border: 1px solid #ddd;">${row.name}</td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${row.required.toFixed(1)} ${row.unit}</td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${row.current.toFixed(1)} ${row.unit}</td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; text-align: right; color: ${diffColor};">${diffText}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
             container.innerHTML = `
                 <div class="warning">
-                    <strong>注意：</strong> 以下营养素低于每日推荐值。建议添加富含这些营养素的食物。
+                    <strong>提示：</strong> 下表为当前统计周期内（${scale === 'week' ? '7 天' : '1 天'}）的营养对比：左列为推荐摄入，右列为现有食材 / 食谱提供的摄入，红色高亮为存在缺口的项目。
                 </div>
-                <div class="missing-nutrients">
-                    <h3>所需营养素</h3>
-                    ${missing.map(item => `
-                        <div class="missing-item">
-                            <div>
-                                <div class="missing-item-name">${item.name}</div>
-                                <div style="font-size: 0.85em; color: #666; margin-top: 4px;">
-                                    当前：${item.current}${item.unit} / 需要：${item.required}${item.unit}
+                ${comparisonTableHtml}
+                ${missing.length > 0 ? `
+                    <div class="missing-nutrients" style="margin-top: 20px;">
+                        <h3>存在明显缺口的营养素</h3>
+                        ${missing.map(item => `
+                            <div class="missing-item">
+                                <div>
+                                    <div class="missing-item-name">${item.name}</div>
+                                    <div style="font-size: 0.85em; color: #666; margin-top: 4px;">
+                                        当前：${item.current}${item.unit} / 需要：${item.required}${item.unit}
+                                    </div>
                                 </div>
+                                <div class="missing-item-amount">缺少：${item.amount}${item.unit}</div>
                             </div>
-                            <div class="missing-item-amount">缺少：${item.amount}${item.unit}</div>
-                        </div>
-                    `).join('')}
-                </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
                 ${supplementTable.length > 0 ? `
                     <div style="margin-top: 20px;">
                         <h3 style="color: #c2185b; margin-bottom: 15px;">💡 补充建议</h3>
@@ -1885,6 +2563,7 @@
                         </div>
                     </div>
                 ` : ''}
+                ${optimizationAdvice}
             `;
         }
 
