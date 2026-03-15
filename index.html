@@ -585,7 +585,8 @@
             <div class="section full-width">
                 <h2 class="section-title">📤 上传自定义食谱</h2>
                 <div class="info-box">
-                    <strong>使用说明：</strong> 可以在下面粘贴文字版食谱，或上传文件（PDF / Word / TXT）。目前营养解析主要基于文字内容，请尽量写明食材名称及大致用量。
+                    <strong>使用说明：</strong> 可在下方粘贴文字版食谱或上传文件（PDF/Word/TXT），请尽量写明食材名称及用量（如「豆腐 80 克」）。<br>
+                    <strong>未在食材库中的食材</strong>会单独列出，您可选择：<strong>仅展示</strong>（出现在摘要中，不参与营养计算）或<strong>按分类参与营养估算</strong>（选择果/蔬/菌/豆/谷，按该类代表食材粗略估算）。
                 </div>
                 <div class="input-group">
                     <label for="custom-recipe-text">食谱正文（支持粘贴自 PDF / Word 等）：</label>
@@ -649,6 +650,14 @@
                     </select>
                 </div>
                 <div class="input-group">
+                    <label for="card-scope" style="font-size: 0.9em; color: #666;">卡片范围：</label>
+                    <select id="card-scope" style="margin-top: 5px; max-width: 260px;">
+                        <option value="single" selected>单道菜 / 单个菜谱</option>
+                        <option value="day">单日全天菜单（多道菜合并分享）</option>
+                        <option value="week">整周菜单（7 天食谱总览）</option>
+                    </select>
+                </div>
+                <div class="input-group">
                     <label for="card-title-input">菜名 / Recipe Title：</label>
                     <input type="text" id="card-title-input" placeholder="例如：红薯菠菜汤 / Sweet Potato Spinach Soup">
                 </div>
@@ -690,8 +699,17 @@
             'tomatoes': { name: '番茄', category: 'fruit', nutrients: { protein: 0.9, calcium: 10, iron: 0.3, vitaminC: 14, vitaminB12: 0, omega3: 0, fiber: 1.2, calories: 18 } },
             'bell-pepper': { name: '甜椒', category: 'fruit', nutrients: { protein: 1, calcium: 10, iron: 0.3, vitaminC: 127, vitaminB12: 0, omega3: 0, fiber: 2.5, calories: 31 } },
             'avocado': { name: '牛油果', category: 'fruit', nutrients: { protein: 2, calcium: 12, iron: 0.6, vitaminC: 10, vitaminB12: 0, omega3: 0, fiber: 6.7, calories: 160 } },
+            'orange': { name: '橙子', category: 'fruit', nutrients: { protein: 0.9, calcium: 40, iron: 0.1, vitaminC: 53, vitaminB12: 0, omega3: 0, fiber: 2.4, calories: 47 } },
             // 蔬（蔬菜）
             'spinach': { name: '菠菜', category: 'vegetable', nutrients: { protein: 2.9, calcium: 99, iron: 2.7, vitaminC: 28, vitaminB12: 0, omega3: 0, fiber: 2.2, calories: 23 } },
+            'winter-bamboo': { name: '冬笋', category: 'vegetable', nutrients: { protein: 2.6, calcium: 13, iron: 0.5, vitaminC: 4, vitaminB12: 0, omega3: 0, fiber: 2.2, calories: 27 } },
+            'taro': { name: '香芋', category: 'vegetable', nutrients: { protein: 1.5, calcium: 43, iron: 0.6, vitaminC: 4.5, vitaminB12: 0, omega3: 0, fiber: 4.1, calories: 112 } },
+            'pumpkin': { name: '南瓜', category: 'vegetable', nutrients: { protein: 1, calcium: 21, iron: 0.8, vitaminC: 9, vitaminB12: 0, omega3: 0, fiber: 2.7, calories: 26 } },
+            'radish': { name: '萝卜', category: 'vegetable', nutrients: { protein: 0.7, calcium: 25, iron: 0.3, vitaminC: 15, vitaminB12: 0, omega3: 0, fiber: 1.6, calories: 16 } },
+            'greens': { name: '青菜', category: 'vegetable', nutrients: { protein: 1.4, calcium: 74, iron: 0.9, vitaminC: 32, vitaminB12: 0, omega3: 0, fiber: 2.1, calories: 13 } },
+            'wakame': { name: '裙带菜', category: 'vegetable', nutrients: { protein: 3, calcium: 150, iron: 2.2, vitaminC: 3, vitaminB12: 0, omega3: 0, fiber: 0.5, calories: 45 } },
+            'tonghao': { name: '茼蒿', category: 'vegetable', nutrients: { protein: 1.8, calcium: 40, iron: 0.8, vitaminC: 18, vitaminB12: 0, omega3: 0, fiber: 1.6, calories: 21 } },
+            'cilantro': { name: '香菜', category: 'vegetable', nutrients: { protein: 2.1, calcium: 67, iron: 1.8, vitaminC: 27, vitaminB12: 0, omega3: 0, fiber: 2.8, calories: 23 } },
             'broccoli': { name: '西兰花', category: 'vegetable', nutrients: { protein: 2.8, calcium: 47, iron: 0.7, vitaminC: 89, vitaminB12: 0, omega3: 0, fiber: 2.6, calories: 34 } },
             'kale': { name: '羽衣甘蓝', category: 'vegetable', nutrients: { protein: 2.9, calcium: 150, iron: 1.5, vitaminC: 120, vitaminB12: 0, omega3: 0, fiber: 2, calories: 49 } },
             'carrots': { name: '胡萝卜', category: 'vegetable', nutrients: { protein: 0.9, calcium: 33, iron: 0.3, vitaminC: 5.9, vitaminB12: 0, omega3: 0, fiber: 2.8, calories: 41 } },
@@ -702,8 +720,10 @@
             'sweet-potato': { name: '红薯', category: 'vegetable', nutrients: { protein: 1.6, calcium: 30, iron: 0.6, vitaminC: 2.4, vitaminB12: 0, omega3: 0, fiber: 3, calories: 86 } },
             // 菌（菌菇）
             'mushrooms': { name: '蘑菇', category: 'mushroom', nutrients: { protein: 3.1, calcium: 3, iron: 0.5, vitaminC: 2.1, vitaminB12: 0, omega3: 0, fiber: 1, calories: 22 } },
+            'bai-ling-mushroom': { name: '白灵菇', category: 'mushroom', nutrients: { protein: 3.5, calcium: 5, iron: 0.6, vitaminC: 0, vitaminB12: 0, omega3: 0, fiber: 2.5, calories: 22 } },
             // 豆（豆类）
             'tofu': { name: '豆腐', category: 'bean', nutrients: { protein: 8, calcium: 350, iron: 1.5, vitaminC: 0, vitaminB12: 0, omega3: 0, fiber: 0.3, calories: 76 } },
+            'tofu-dried': { name: '豆干', category: 'bean', nutrients: { protein: 16, calcium: 308, iron: 3.4, vitaminC: 0, vitaminB12: 0, omega3: 0, fiber: 0.6, calories: 140 } },
             'tempeh': { name: '天贝', category: 'bean', nutrients: { protein: 19, calcium: 111, iron: 2.7, vitaminC: 0, vitaminB12: 0, omega3: 0, fiber: 9, calories: 193 } },
             'lentils': { name: '扁豆', category: 'bean', nutrients: { protein: 9, calcium: 19, iron: 3.3, vitaminC: 1.5, vitaminB12: 0, omega3: 0, fiber: 7.9, calories: 116 } },
             'chickpeas': { name: '鹰嘴豆', category: 'bean', nutrients: { protein: 8.9, calcium: 49, iron: 2.9, vitaminC: 1.3, vitaminB12: 0, omega3: 0, fiber: 7.6, calories: 164 } },
@@ -715,7 +735,10 @@
             'flaxseeds': { name: '亚麻籽', category: 'grain', nutrients: { protein: 18, calcium: 255, iron: 5.7, vitaminC: 0.6, vitaminB12: 0, omega3: 22.8, fiber: 27, calories: 534 } },
             'chia-seeds': { name: '奇亚籽', category: 'grain', nutrients: { protein: 16, calcium: 631, iron: 7.7, vitaminC: 1.6, vitaminB12: 0, omega3: 17.8, fiber: 34, calories: 486 } },
             'almonds': { name: '杏仁', category: 'grain', nutrients: { protein: 21, calcium: 269, iron: 3.7, vitaminC: 0, vitaminB12: 0, omega3: 0, fiber: 12, calories: 579 } },
-            'walnuts': { name: '核桃', category: 'grain', nutrients: { protein: 15, calcium: 98, iron: 2.9, vitaminC: 1.3, vitaminB12: 0, omega3: 2.5, fiber: 6.7, calories: 654 } }
+            'walnuts': { name: '核桃', category: 'grain', nutrients: { protein: 15, calcium: 98, iron: 2.9, vitaminC: 1.3, vitaminB12: 0, omega3: 2.5, fiber: 6.7, calories: 654 } },
+            'vermicelli': { name: '粉丝', category: 'grain', nutrients: { protein: 0.2, calcium: 4, iron: 0.1, vitaminC: 0, vitaminB12: 0, omega3: 0, fiber: 0.1, calories: 351 } },
+            'flaxseed-powder': { name: '亚麻籽粉', category: 'grain', nutrients: { protein: 18, calcium: 255, iron: 5.7, vitaminC: 0.6, vitaminB12: 0, omega3: 22.8, fiber: 27, calories: 534 } },
+            'five-black-powder': { name: '五黑粉', category: 'grain', nutrients: { protein: 12, calcium: 180, iron: 4, vitaminC: 0, vitaminB12: 0, omega3: 1.5, fiber: 8, calories: 380 } }
         };
 
         // 根据年龄和性别计算每日营养需求
@@ -994,7 +1017,8 @@
         ];
 
         let selectedIngredients = [];
-        let customRecipeIngredients = []; // 从自定义食谱解析出的食材
+        let customRecipeIngredients = []; // 从自定义食谱解析出的食材（已匹配库中）
+        let customRecipeUnknowns = [];  // 用户选择“仅展示”的未识别食材，不参与营养计算
         let persons = []; // 存储多个人群信息
         let currentRecipeCardHtml = ''; // 最近生成的菜谱卡片 HTML，用于下载
 
@@ -1110,6 +1134,7 @@
 
         function generateRecipeCard() {
             const language = (document.getElementById('card-language') || {}).value || 'zh';
+            const scope = (document.getElementById('card-scope') || {}).value || 'single';
             const titleInput = document.getElementById('card-title-input');
             const ingredientsInput = document.getElementById('card-ingredients-input');
             const methodInput = document.getElementById('card-method-input');
@@ -1136,6 +1161,25 @@
 
             const createdAt = new Date();
             const dateText = createdAt.toLocaleDateString(language === 'zh' ? 'zh-CN' : 'en-US');
+
+            let subtitle;
+            if (language === 'zh') {
+                if (scope === 'day') {
+                    subtitle = '素食营养「单日全天菜单」菜谱卡片 · 可包含早餐/午餐/晚餐等多道菜';
+                } else if (scope === 'week') {
+                    subtitle = '素食营养「整周菜单」菜谱卡片 · 适合分享 7 天食谱总览';
+                } else {
+                    subtitle = '素食营养菜谱卡片 · 适合分享给家人朋友';
+                }
+            } else {
+                if (scope === 'day') {
+                    subtitle = 'Plant-based daily full-day menu card · Combine breakfast, lunch, dinner and more';
+                } else if (scope === 'week') {
+                    subtitle = 'Plant-based weekly menu card · Overview of 7-day recipes to share';
+                } else {
+                    subtitle = 'Plant-based nutrition recipe card · For sharing with family and friends';
+                }
+            }
 
             const cardHtml = `
 <!DOCTYPE html>
@@ -1223,7 +1267,7 @@
             <div class="card-header">
                 <h1 class="card-title">${title}</h1>
                 <div class="card-subtitle">
-                    ${language === 'zh' ? '素食营养菜谱卡片 · 适合分享给家人朋友' : 'Plant-based nutrition recipe card · For sharing with family and friends'}
+                    ${subtitle}
                 </div>
             </div>
             ${photos.length > 0 ? `
@@ -1287,39 +1331,196 @@
 
         // ================= 自定义食谱解析相关 =================
 
-        // 从文本中解析出已知食材及大致用量（克）
+        // 从文本中解析出已知食材及大致用量（克），并提取可能未识别的“名称+克数”
         function parseIngredientsFromText(text) {
-            const results = [];
-            if (!text) return results;
+            const matched = [];
+            const unmatchedSet = new Map(); // name -> amount，去重
+            if (!text) return { matched, unmatched: [] };
 
-            const normalized = text.replace(/\s+/g, '');
+            const knownNames = new Set();
+            Object.keys(ingredientsDB).forEach(key => {
+                if (ingredientsDB[key].name) knownNames.add(ingredientsDB[key].name);
+            });
 
+            const normalized = text.replace(/\s+/g, ' ');
+
+            // 1) 匹配库中已有食材
             Object.keys(ingredientsDB).forEach(key => {
                 const info = ingredientsDB[key];
                 if (!info.name) return;
+                if (normalized.indexOf(info.name) === -1) return;
 
-                if (normalized.includes(info.name)) {
-                    // 简单规则：尝试在食材名前后寻找类似“50克”这样的数字+单位
-                    let amount = 100; // 默认 100 克
-                    const pattern = new RegExp('(\\d{1,3})\\s*(克|g|G)(?=[^\\d]{0,5}' + info.name + ')');
-                    const match = text.match(pattern);
-                    if (match && match[1]) {
-                        const parsed = parseInt(match[1], 10);
-                        if (!isNaN(parsed) && parsed > 0 && parsed < 1000) {
-                            amount = parsed;
-                        }
-                    }
-
-                    results.push({
-                        key,
-                        name: info.name,
-                        amount,
-                        nutrients: info.nutrients
-                    });
+                let amount = 100;
+                const pattern = new RegExp('(\\d{1,4})\\s*(克|g|G)(?=[^\\d]{0,8}' + info.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'i');
+                const match = text.match(pattern);
+                if (match && match[1]) {
+                    const parsed = parseInt(match[1], 10);
+                    if (!isNaN(parsed) && parsed > 0 && parsed < 2000) amount = parsed;
                 }
+                matched.push({
+                    key,
+                    name: info.name,
+                    amount,
+                    nutrients: info.nutrients
+                });
             });
 
-            return results;
+            // 2) 提取可能未识别的“中文/英文名 + 数字 + 克”或“数字 + 克 + 中文/英文名”
+            const re1 = /([\u4e00-\u9fa5a-zA-Z]{2,20})\s*(\d{1,4})\s*克/g;
+            const re2 = /(\d{1,4})\s*克\s*([\u4e00-\u9fa5a-zA-Z]{2,20})/g;
+            let m;
+            while ((m = re1.exec(text)) !== null) {
+                const name = m[1].trim();
+                const amount = parseInt(m[2], 10);
+                if (knownNames.has(name) || !name) continue;
+                if (!unmatchedSet.has(name) || amount < unmatchedSet.get(name)) unmatchedSet.set(name, amount);
+            }
+            while ((m = re2.exec(text)) !== null) {
+                const amount = parseInt(m[1], 10);
+                const name = m[2].trim();
+                if (knownNames.has(name) || !name) continue;
+                if (!unmatchedSet.has(name) || amount < unmatchedSet.get(name)) unmatchedSet.set(name, amount);
+            }
+            const unmatched = Array.from(unmatchedSet.entries()).map(([name, amount]) => ({ name, amount }));
+
+            return { matched, unmatched };
+        }
+
+        // 最近一次解析得到的未识别列表（供用户选择“仅展示”或“按分类参与营养”）
+        let currentParseUnmatched = [];
+
+        // 按分类取一种代表食材的营养（用于未识别项按分类估算）
+        function getDefaultNutrientsForCategory(category) {
+            const first = Object.keys(ingredientsDB).find(k => ingredientsDB[k].category === category);
+            return first ? { ...ingredientsDB[first].nutrients } : { protein: 2, calcium: 30, iron: 0.5, vitaminC: 5, vitaminB12: 0, omega3: 0.5, fiber: 2, calories: 50 };
+        }
+
+        // 将未识别项加入“仅展示”列表（不参与营养）
+        function addUnknownAsDisplayOnly(name, amount) {
+            customRecipeUnknowns.push({ name, amount });
+            currentParseUnmatched = currentParseUnmatched.filter(u => u.name !== name || u.amount !== amount);
+            renderCustomRecipeSummary();
+            updateDailyMealPlan();
+            updateNutrition();
+            updateMissingNutrients();
+        }
+
+        // 将未识别项按分类加入当次营养计算
+        function addUnknownWithCategory(name, amount, category) {
+            const nutrients = getDefaultNutrientsForCategory(category);
+            customRecipeIngredients.push({
+                key: 'custom-' + name.replace(/\s/g, '-'),
+                name: name,
+                amount: amount,
+                nutrients: nutrients
+            });
+            currentParseUnmatched = currentParseUnmatched.filter(u => u.name !== name || u.amount !== amount);
+            renderCustomRecipeSummary();
+            updateDailyMealPlan();
+            updateNutrition();
+            updateMissingNutrients();
+        }
+
+        // 渲染“上传自定义食谱”下方的解析结果与未识别区域
+        function renderCustomRecipeSummary() {
+            const summary = document.getElementById('custom-recipe-summary');
+            const fileInput = document.getElementById('custom-recipe-file');
+            let fileNote = '';
+            if (fileInput && fileInput.files.length) {
+                fileNote = `已上传文件：${fileInput.files[0].name}。`;
+            }
+            const hasMatched = customRecipeIngredients.length > 0;
+            const hasUnknowns = customRecipeUnknowns.length > 0;
+            const hasUnmatched = currentParseUnmatched.length > 0;
+
+            let html = '';
+            if (hasMatched) {
+                const listHtml = customRecipeIngredients.map(ing => `${ing.name}（约 ${ing.amount} 克）`).join('、');
+                html += `
+                    <div class="info-box">
+                        <strong>已识别食材（参与营养计算）：</strong><br>
+                        ${listHtml}<br>
+                        ${fileNote ? `<span style="font-size: 0.85em; color: #777;">${fileNote}</span>` : ''}
+                    </div>`;
+            }
+            if (hasUnknowns) {
+                html += `
+                    <div class="info-box" style="margin-top: 8px; border-left: 4px solid #ff9800;">
+                        <strong>本次食谱中未在库食材（仅展示，不参与营养）：</strong><br>
+                        ${customRecipeUnknowns.map(u => `${u.name}（${u.amount} 克）`).join('、')}
+                        <button type="button" class="btn btn-secondary" style="margin-left: 8px; padding: 4px 10px; font-size: 0.85em;" onclick="clearCustomRecipeUnknowns()">清空仅展示项</button>
+                    </div>`;
+            }
+            if (hasUnmatched) {
+                html += `
+                    <div class="warning" style="margin-top: 10px;">
+                        <strong>以下内容未在食材库中，您可以选择：</strong>
+                        <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+                            <li><strong>加入为仅展示项</strong>：出现在本次食谱摘要和分享卡片中，不参与营养计算。</li>
+                            <li><strong>按分类参与营养估算</strong>：选择果蔬菌豆谷中一类，按该类代表食材粗略估算营养。</li>
+                        </ul>
+                        <div id="unmatched-list" style="margin-top: 10px;"></div>
+                    </div>`;
+            }
+            if (!hasMatched && !hasUnknowns && !hasUnmatched) {
+                html = `
+                    <div class="warning">
+                        未能在文本中识别出已知食材，请确保使用了数据库中的中文食材名称（如：豆腐、天贝、糙米、菠菜等），并尽量写明用量（例如“50 克”）。您也可以先输入菜名和制作方式，再使用下方「生成可分享的菜谱卡片」。
+                    </div>`;
+            }
+            if (summary) summary.innerHTML = html || '';
+
+            // 渲染未识别列表及操作按钮（用索引避免名称中的引号问题）
+            if (hasUnmatched) {
+                const listEl = document.getElementById('unmatched-list');
+                if (listEl) {
+                    listEl.innerHTML = currentParseUnmatched.map((u, i) => `
+                        <div class="unmatched-item" style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; padding: 8px; background: #f9f9f9; border-radius: 8px;">
+                            <span><strong>${escapeHtml(u.name)}</strong> ${u.amount} 克</span>
+                            <button type="button" class="btn" style="padding: 4px 10px; font-size: 0.85em;" onclick="addUnknownAsDisplayOnlyByIndex(${i})">仅展示</button>
+                            <span style="font-size: 0.9em; color: #666;">按分类估算：</span>
+                            <select class="unmatched-category-select" data-index="${i}" style="padding: 4px 8px; font-size: 0.85em;">
+                                <option value="">选择分类…</option>
+                                <option value="fruit">果</option>
+                                <option value="vegetable">蔬</option>
+                                <option value="mushroom">菌</option>
+                                <option value="bean">豆</option>
+                                <option value="grain">谷</option>
+                            </select>
+                        </div>
+                    `).join('');
+                    listEl.querySelectorAll('.unmatched-category-select').forEach(sel => {
+                        sel.addEventListener('change', function() {
+                            const val = this.value;
+                            if (!val) return;
+                            const idx = parseInt(this.getAttribute('data-index'), 10);
+                            const u = currentParseUnmatched[idx];
+                            if (u) addUnknownWithCategory(u.name, u.amount, val);
+                            this.value = '';
+                        });
+                    });
+                }
+            }
+        }
+
+        function escapeHtml(s) {
+            const div = document.createElement('div');
+            div.textContent = s;
+            return div.innerHTML;
+        }
+
+        function addUnknownAsDisplayOnlyByIndex(index) {
+            const u = currentParseUnmatched[index];
+            if (!u) return;
+            addUnknownAsDisplayOnly(u.name, u.amount);
+        }
+
+        function clearCustomRecipeUnknowns() {
+            customRecipeUnknowns = [];
+            renderCustomRecipeSummary();
+            updateDailyMealPlan();
+            updateNutrition();
+            updateMissingNutrients();
         }
 
         // 解析自定义食谱按钮
@@ -1334,38 +1535,17 @@
                 alert('请先在文本框中粘贴食谱内容，或上传一个包含食谱的文件。');
                 return;
             }
-
-            // 文件上传仅用于记录名称，实际解析仍基于文本框
-            let fileNote = '';
-            if (fileInput.files.length) {
-                const file = fileInput.files[0];
-                fileNote = `已上传文件：${file.name}。`;
-                if (!rawText) {
-                    alert('当前版本暂不支持直接从 PDF / Word 中自动解析，请在上方文本框中粘贴主要食材及用量。');
-                    return;
-                }
+            if (fileInput.files.length && !rawText) {
+                alert('当前版本暂不支持直接从 PDF / Word 中自动解析，请在上方文本框中粘贴主要食材及用量。');
+                return;
             }
 
-            customRecipeIngredients = parseIngredientsFromText(rawText);
+            const { matched, unmatched } = parseIngredientsFromText(rawText);
+            customRecipeIngredients = matched;
+            customRecipeUnknowns = []; // 每次重新解析时清空“仅展示”列表，用户可重新选择
+            currentParseUnmatched = unmatched;
 
-            if (customRecipeIngredients.length === 0) {
-                summary.innerHTML = `
-                    <div class="warning">
-                        未能在文本中识别出已知食材，请确保使用了数据库中的中文食材名称（如：豆腐、天贝、糙米、菠菜等），并尽量写明用量（例如“50 克”）。
-                    </div>
-                `;
-            } else {
-                const listHtml = customRecipeIngredients.map(ing => `${ing.name}（约 ${ing.amount} 克）`).join('、');
-                summary.innerHTML = `
-                    <div class="info-box">
-                        <strong>已根据自定义食谱识别出以下食材：</strong><br>
-                        ${listHtml}<br>
-                        ${fileNote ? `<span style="font-size: 0.85em; color: #777;">${fileNote}</span>` : ''}
-                    </div>
-                `;
-            }
-
-            // 解析结果参与营养统计与缺失分析
+            renderCustomRecipeSummary();
             updateDailyMealPlan();
             updateNutrition();
             updateMissingNutrients();
@@ -1374,6 +1554,8 @@
         // 清空自定义食谱
         function clearCustomRecipe() {
             customRecipeIngredients = [];
+            customRecipeUnknowns = [];
+            currentParseUnmatched = [];
             const textArea = document.getElementById('custom-recipe-text');
             const fileInput = document.getElementById('custom-recipe-file');
             const summary = document.getElementById('custom-recipe-summary');
